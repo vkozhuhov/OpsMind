@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpsMind.Application/OpsMind.Application.csproj" />
+    <ProjectReference Include="../OpsMind.Infrastructure/OpsMind.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

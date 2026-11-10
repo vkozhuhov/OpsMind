@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="OpsMind.Api/OpsMind.Api.csproj" />
+  <Project Path="OpsMind.Application/OpsMind.Application.csproj" />
+  <Project Path="OpsMind.Contracts/OpsMind.Contracts.csproj" />
+  <Project Path="OpsMind.Domain/OpsMind.Domain.csproj" />
+  <Project Path="OpsMind.Infrastructure/OpsMind.Infrastructure.csproj" />
+  <Project Path="OpsMind.Migrator/OpsMind.Migrator.csproj" />
+  <Project Path="OpsMind.UnitTests/OpsMind.UnitTests.csproj" />
+  <Project Path="OpsMind.Worker/OpsMind.Worker.csproj" />
+</Solution>

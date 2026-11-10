@@ -41,5 +41,5 @@ Question -> hybrid retrieval -> rerank -> LLM -> answer + citations
 
 ## Статус
 
-Сейчас подготовлена спецификация MVP. Следующий этап — solution skeleton, локальная инфраструктура PostgreSQL/pgvector и первая вертикаль `upload -> indexing -> status`.
+Solution skeleton и базовые правила сборки подготовлены. Следующий этап — локальная инфраструктура PostgreSQL/pgvector и первая вертикаль `upload -> indexing -> status`.
 

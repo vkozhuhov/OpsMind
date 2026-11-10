@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../OpsMind.Application/OpsMind.Application.csproj" />
+    <ProjectReference Include="../OpsMind.Domain/OpsMind.Domain.csproj" />
+  </ItemGroup>
+</Project>

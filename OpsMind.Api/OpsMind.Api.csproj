@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpsMind.Application/OpsMind.Application.csproj" />
+    <ProjectReference Include="../OpsMind.Contracts/OpsMind.Contracts.csproj" />
+    <ProjectReference Include="../OpsMind.Infrastructure/OpsMind.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

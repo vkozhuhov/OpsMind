@@ -113,33 +113,33 @@ MVP не требует распределённых транзакций меж
 ## 6. Структура solution
 
 ```text
-OpsMind.sln
+OpsMind.slnx
 Directory.Build.props
 Directory.Packages.props
 global.json
 
-src/
-  OpsMind.Api/                 HTTP endpoints, auth, SSE, composition root
-  OpsMind.Worker/              outbox polling, indexing, cleanup, reconciliation
-  OpsMind.Migrator/            migrations and startup checks
-  OpsMind.Domain/              entities, value objects, invariants, state machines
-  OpsMind.Application/         use cases, ports, policies, DTO-independent models
-  OpsMind.Infrastructure/      PostgreSQL, blobs, parsers, AI provider adapters
-  OpsMind.Contracts/           versioned HTTP request/response/SSE contracts
+OpsMind.Api/                 HTTP endpoints, auth, SSE, composition root
+OpsMind.Worker/              outbox polling, indexing, cleanup, reconciliation
+OpsMind.Migrator/            migrations and startup checks
+OpsMind.Domain/              entities, value objects, invariants, state machines
+OpsMind.Application/         use cases, ports, policies, DTO-independent models
+OpsMind.Infrastructure/      PostgreSQL, blobs, parsers, AI provider adapters
+OpsMind.Contracts/           versioned HTTP request/response/SSE contracts
 
-tests/
-  OpsMind.UnitTests/
-  OpsMind.IntegrationTests/
-  OpsMind.ApiTests/
-  OpsMind.ArchitectureTests/
-  OpsMind.EvaluationTests/
-  OpsMind.LoadTests/
-  TestData/
+OpsMind.UnitTests/
+OpsMind.IntegrationTests/    добавляется перед integration slice
+OpsMind.ApiTests/            добавляется перед API end-to-end tests
+OpsMind.ArchitectureTests/   добавляется при фиксации dependency rules
+OpsMind.EvaluationTests/     добавляется перед evaluation runner
+OpsMind.LoadTests/           добавляется перед load testing
+TestData/
 
 deploy/
   compose.yaml
   otel-collector.yaml
   grafana/
+
+docs/
 ```
 
 Направление project references:
