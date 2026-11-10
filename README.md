@@ -28,7 +28,7 @@ Question -> hybrid retrieval -> rerank -> LLM -> answer + citations
 - PostgreSQL + pgvector;
 - Microsoft.Extensions.AI;
 - OpenAI-compatible API для embeddings и chat completion;
-- Hangfire или Quartz с transactional outbox;
+- PostgreSQL transactional outbox-as-queue и отдельный indexing worker;
 - OpenTelemetry;
 - Docker Compose.
 
@@ -36,6 +36,7 @@ Question -> hybrid retrieval -> rerank -> LLM -> answer + citations
 
 - [Продуктовые требования](docs/product-requirements.md)
 - [Системные требования и архитектура](docs/system-requirements.md)
+- [Архитектура реализации](docs/architecture.md)
 - [Evaluation-набор](docs/evaluation-dataset.md)
 
 ## Статус

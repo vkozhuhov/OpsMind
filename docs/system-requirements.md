@@ -1,7 +1,7 @@
 # OpsMind — системные требования и архитектура MVP
 
 **Статус:** утверждённый baseline MVP  
-**Версия:** 0.2
+**Версия:** 0.3
 
 ## 1. Текущее состояние проекта
 
@@ -34,7 +34,7 @@ ASP.NET Core API ---------------------> PostgreSQL + pgvector
   +----> OpenTelemetry Collector -> tracing/metrics/log backend
 ```
 
-Для MVP API и worker могут быть двумя host-процессами из одной solution и общей application/domain-библиотеки. Индексация должна оставаться асинхронной, даже если локально оба процесса запускаются вместе. Hangfire, Quartz или собственный dispatcher являются инфраструктурной деталью при условии соблюдения outbox, lease, retry и idempotency semantics.
+Для MVP API и worker являются двумя host-процессами из одной solution и общих application/domain-библиотек. Индексация остаётся асинхронной, даже если локально оба процесса запускаются вместе. В MVP PostgreSQL outbox одновременно служит durable queue и обрабатывается worker через lease; Hangfire, Quartz или message broker рассматриваются только при измеренной необходимости и не меняют application contracts.
 
 ## 3. Архитектурные правила
 
@@ -62,14 +62,15 @@ ASP.NET Core API ---------------------> PostgreSQL + pgvector
 | `Document` | Стабильная логическая сущность: `Id`, tenant/workspace, title, source type, state, `ActiveVersionId` |
 | `DocumentVersion` | Неизменяемый источник: `Id`, `DocumentId`, internal revision, applicable service/version/date, object key, checksum, MIME, timestamps; не принадлежит конкретной embedding model |
 | `DocumentIndex` | Материализация одной `DocumentVersion` для одного `IndexProfile`: `Id`, version/profile, processing status, parser/chunker metadata, timestamps, failure code |
-| `Chunk` | `Id`, `DocumentIndexId`, tenant/workspace, ordinal, section path, text, token count, page/line coordinates, metadata JSON, FTS vector, embedding |
+| `Chunk` | `Id`, `DocumentIndexId`, tenant/workspace, ordinal, section path, text, token count, page/line coordinates, metadata JSON, FTS vectors |
+| `ChunkEmbedding` | `ChunkId`, embedding model key, tenant/workspace, vector; хранится отдельно от text row и индексируется по model family |
 | `IndexProfile` | `Id`, workspace, status, provider/model, embedding dimensions, distance metric, chunker/parser versions, FTS/fusion/reranker configuration |
 | `Conversation` | `Id`, tenant/workspace, owner, title, created/updated timestamps |
 | `Message` | `Id`, conversation, role, content, status, model usage, trace ID, timestamp |
 | `AnswerCitation` | `Id`, answer message, chunk/version reference, immutable quote snapshot, coordinates, rank, retrieval/rerank score |
 | `RetrievalRun` | Question, filters, profile, candidates, timings, decision/confidence signals |
-| `IndexingJob` | `DocumentIndexId`, attempt, status, lease/retry data, trace ID |
-| `OutboxMessage` | Тип фоновой команды, payload/reference, occurred/published timestamps, attempt/error; создаётся в транзакции с бизнес-состоянием |
+| `IndexingAttempt` | `DocumentIndexId`, attempt, worker, status, stage timings, error, trace ID |
+| `OutboxMessage` | Тип фоновой команды, payload/reference, deduplication key, available/locked/processed timestamps, attempts/error; создаётся в транзакции с бизнес-состоянием и является durable job в MVP |
 | `AuditEvent` | Tenant/workspace, actor, operation, resource reference, result, timestamp; без содержимого документа |
 
 Все таблицы, содержащие пользовательские знания, должны иметь прямой либо гарантированно проверяемый путь к `OrganizationId` и `WorkspaceId`. Для горячего retrieval-пути эти поля хранятся непосредственно в `Chunk`. Composite foreign keys должны доказывать, что workspace, membership, document, version и chunk принадлежат одной организации. Проверка application layer обязательна; PostgreSQL RLS может использоваться как второй рубеж.
@@ -102,8 +103,8 @@ DocumentIndex: Queued -> Extracting -> Chunking -> Embedding -> Staged -> Ready
 1. API принимает upload с `Idempotency-Key`, проверяет квоты и потоково записывает blob во временный object key, одновременно считая checksum и лимиты.
 2. После валидации blob копируется/продвигается в immutable content-addressed key; существование и checksum окончательного объекта проверяются до транзакции БД.
 3. API одной транзакцией создаёт `DocumentVersion` со ссылкой на окончательный key, `DocumentIndex(Queued)` для active profile и `OutboxMessage(IndexDocumentIndex)`.
-4. Outbox dispatcher публикует команду at-least-once и отмечает публикацию. Reconciliation повторяет зависшие сообщения.
-5. Worker получает команду, захватывает lease и проверяет текущее состояние `DocumentIndex`. Каждый stage имеет детерминированный ключ и допускает безопасный повтор.
+4. Worker атомарно claim'ит outbox command с lease через `FOR UPDATE SKIP LOCKED`; доставка остаётся at-least-once. Reconciliation освобождает истёкшие leases и обнаруживает зависшие сообщения.
+5. Worker проверяет текущее состояние `DocumentIndex`. Каждый stage имеет детерминированный ключ и допускает безопасный повтор; completion принимается только от актуального lease owner.
 6. Временный объект удаляется после успеха; если транзакция БД не состоялась, окончательный object становится orphan и удаляется cleanup job после safety window. Orphaned blobs и зависшие `Queued` indexes регулярно обнаруживаются метриками и reconciliation.
 
 ### Вопрос и ответ
