@@ -816,6 +816,8 @@ Architecture tests должны запрещать ссылки Domain/Applicati
 
 **Готово, когда:** чистый checkout запускается одной документированной командой, migrations и smoke tests проходят.
 
+**Текущая реализация:** slice 0 завершён. Базовые Compose-файлы, telemetry, CI workflow, EF Core/Npgsql, инфраструктурная миграция `vector`/schemas и API readiness endpoint добавлены; сборка, тесты и smoke-проверки на чистом PostgreSQL прошли.
+
 ### Slice 1. Tenant и access
 
 - identity claims mapping;
@@ -883,6 +885,7 @@ Architecture tests должны запрещать ссылки Domain/Applicati
 
 Следующие условия должны проверяться автоматически:
 
+- project-reference matrix solution соответствует модульным границам; `Domain`, `Application` и `Contracts` не имеют запрещённых зависимостей;
 - ни один retrieval method не вызывается без `AccessScope`;
 - provider SDK packages отсутствуют в Domain/Application;
 - tenant-owned tables имеют tenant columns и approved RLS policy;
